@@ -1,0 +1,56 @@
+{
+    LastLoggedInUser = "";
+    RememberLastLoggedInUser = <*I1>;
+    DisplayHostName = <*I1>;        
+    StartupHook = "";
+    ShutdownHook = "";
+    DefaultSessionScript = (
+        ("/usr/NextSpace/bin/gnustep-services", "start"),
+        ("/usr/NextSpace/Apps/Workspace.app/Workspace"),
+        ("/usr/NextSpace/bin/gnustep-services", "stop")
+    );
+    WindowServerCommand = (
+	"/bin/Xorg",
+	":0",
+        "-noreset",
+        "-background", "none",
+        "-seat", "seat0",
+	"-nolisten", "tcp",
+        "-keeptty",
+        "vt1"
+    );
+    RebootCommand = "/sbin/shutdown -r now";
+    ShutdownCommand = "/sbin/shutdown -h now";
+    WindowServerLayouts = {
+	DefaultLayout = VESA;
+	Intel = {
+	    DeviceIDs = (
+		258A,
+		2776,
+		27A2,
+		27A6,
+		2973,
+		2993,
+		29A2,
+		2A02
+	    );
+	    LayoutName = Intel;
+	    VendorID = 8086;
+	};
+	OptionName = "-layout";
+	VMware = {
+	    DeviceIDs = (
+		0710
+	    );
+	    LayoutName = VMware;
+	    VendorID = 15AD;
+	};
+	VirtualBox = {
+	    DeviceIDs = (
+		BEEF
+	    );
+	    LayoutName = VBox;
+	    VendorID = 80EE;
+	};
+    };
+}

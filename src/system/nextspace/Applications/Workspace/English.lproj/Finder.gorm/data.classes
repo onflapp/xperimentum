@@ -1,0 +1,61 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    Finder = {
+	Actions = (
+	    "performFind:"
+	);
+	Outlets = (
+	    findField,
+	    window,
+	    resultList,
+	    findButton,
+	    findScopeButton,
+	    shelf,
+	    resultsFound,
+	    iconPlace,
+	    statusField
+	);
+	Super = NSObject;
+    };
+    FirstResponder = {
+	Actions = (
+	    "performFind:"
+	);
+	Super = NSObject;
+    };
+    NXIcon = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSView;
+    };
+    NXIconView = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSView;
+    };
+    PathIcon = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NXIcon;
+    };
+    WMFindField = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NSTextField;
+    };
+    WMShelf = {
+	Actions = (
+	);
+	Outlets = (
+	);
+	Super = NXIconView;
+    };
+}

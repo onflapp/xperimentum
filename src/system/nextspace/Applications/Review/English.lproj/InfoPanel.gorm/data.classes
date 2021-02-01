@@ -1,0 +1,28 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    AppController = {
+	Actions = (
+	    "showPrefPanel:",
+	    "showInspector:",
+	    "openImage:",
+	    "imageWindowWillClose:",
+	    "setDefaultSize:",
+	    "showInfoPanel:"
+	);
+	Outlets = (
+	    infoPanel
+	);
+	Super = NSObject;
+    };
+    FirstResponder = {
+	Actions = (
+	    "imageWindowWillClose:",
+	    "openImage:",
+	    "setDefaultSize:",
+	    "showInfoPanel:",
+	    "showInspector:",
+	    "showPrefPanel:"
+	);
+	Super = NSObject;
+    };
+}

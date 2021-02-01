@@ -1,0 +1,71 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    Controller = {
+	Actions = (
+	    "emptyRecycler:",
+	    "showConsole:",
+	    "newViewer:",
+	    "showFinder:",
+	    "showPrefsPanel:",
+	    "showProcesses:",
+	    "logOut:",
+	    "showPermissionsInspector:",
+	    "showAttributesInspector:",
+	    "showContentsInspector:",
+	    "showToolsInspector:",
+	    "showLegalPanel:",
+	    "showInfoPanel:",
+	    "showVolumes:",
+	    "updateViewers:",
+	    "showLauncher:",
+	    "initializeDisk:",
+	    "checkForDisks:",
+	    "setDockVisibility:",
+	    "setDockCollapse:",
+	    "setIconYardVisibility:",
+	    "showHelpPanel:",
+	    "hide:"
+	);
+	Outlets = (
+	    deviceManager,
+	    viewMenu,
+	    viewMenuItem
+	);
+	Super = NSObject;
+    };
+    FirstResponder = {
+	Actions = (
+	    "checkForDisks:",
+	    "compress:",
+	    "destroy:",
+	    "duplicate:",
+	    "eject:",
+	    "emptyRecycler:",
+	    "initializeDisk:",
+	    "logOut:",
+	    "newAction:",
+	    "newFolder:",
+	    "newViewer:",
+	    "openAsFolder:",
+	    "setDockCollapse:",
+	    "setDockVisibility:",
+	    "setIconYardVisibility:",
+	    "showAttributesInspector:",
+	    "showConsole:",
+	    "showContentsInspector:",
+	    "showFinder:",
+	    "showHelpPanel:",
+	    "showInfoPanel:",
+	    "showLauncher:",
+	    "showLegalPanel:",
+	    "showPermissionsInspector:",
+	    "showPrefsPanel:",
+	    "showProcesses:",
+	    "showToolsInspector:",
+	    "showVolumes:",
+	    "unmount:",
+	    "updateViewers:"
+	);
+	Super = NSObject;
+    };
+}

@@ -1,0 +1,39 @@
+{
+    "## Comment" = "Do NOT change this file, Gorm maintains it";
+    FirstResponder = {
+	Actions = (
+	    "setScreenSaver:",
+	    "setDisplayHostName:",
+	    "setLastLoggedIn:",
+	    "setLoginHook:",
+	    "setLogoutHook:"
+	);
+	Super = NSObject;
+    };
+    Login = {
+	Actions = (
+	    "setLastLoggedIn:",
+	    "setDisplayHostName:",
+	    "setLoginHook:",
+	    "setLogoutHook:",
+	    "setScreenSaver:"
+	);
+	Outlets = (
+	    window,
+	    view,
+	    loginHookField,
+	    logoutHookField,
+	    saveLastLoggedIn,
+	    screenSaverField,
+	    screenSaverSlider,
+	    displayHostname,
+	    customSaverButton,
+	    customSaverField,
+	    customSaverTitle,
+	    customUIButton,
+	    customUITitle,
+	    customUIField
+	);
+	Super = NSObject;
+    };
+}
