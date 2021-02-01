@@ -5,6 +5,7 @@ D=$PWD
 
 rm -r /etc/skel/Library 2>/dev/null
 cp -r ./nextspace/System/etc/skel/Library /etc/skel
+cp ./nextspace/System/profile.d/* /etc/profile.d
 
 cd $D/nextspace/Frameworks || exit 1
 
