@@ -1,8 +1,13 @@
 #!/bin/bash
+set -e
 
-./build_libobjc2.sh
-./build_libdispatch.sh
-./build_make.sh
+cp ./nextspace/System/etc/ld.so.conf.d/nextspace.conf /etc/ld.so.conf.d
+
+#./build_libobjc2.sh
+#./build_libdispatch.sh
+#ldconfig
+
+./build_gnustep-make.sh
 ./build_gnustep-base.sh
 ./build_gnustep-gui.sh
 ./build_gnustep-back.sh

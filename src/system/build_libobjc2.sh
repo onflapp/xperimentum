@@ -19,6 +19,6 @@ cmake .. \
 	-DCMAKE_BUILD_TYPE=Release \
 	|| exit 1
 
-$MAKE_CMD clean
-$MAKE_CMD install || exit 1
+make clean
+make install || exit 1
 ldconfig
