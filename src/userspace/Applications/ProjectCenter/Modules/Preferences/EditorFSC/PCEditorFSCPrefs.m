@@ -1,9 +1,10 @@
 // 
 // GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 //
-// Copyright (C) 2001-2009 Free Software Foundation
+// Copyright (C) 2001-2020 Free Software Foundation
 //
 // Authors: Sergii Stoian
+//          Riccardo Mottola
 //
 // Description: 
 //
@@ -67,8 +68,8 @@
     }
 
   prefs = aPrefs;
-  currentPlainFont = nil;
-  currentRichFont = nil;
+  currentEditorFont = nil;
+  currentConsoleFixedFont = nil;
 
   RETAIN(editorFSCView);
 
@@ -90,22 +91,22 @@
 
 - (void)awakeFromNib
 {
-  [plainTextFontButton setTarget:self];
-  [plainTextFontField setAllowsEditingTextAttributes:YES];
+  [editorFontButton setTarget:self];
+  [editorFontField setAllowsEditingTextAttributes:YES];
 
-  [richTextFontButton setTarget:self];
-  [richTextFontField setAllowsEditingTextAttributes:YES];
+  [consoleFixedFontButton setTarget:self];
+  [consoleFixedFontField setAllowsEditingTextAttributes:YES];
 }
 
 // ----------------------------------------------------------------------------
 // --- Utility methods
 // ----------------------------------------------------------------------------
 
-- (void)pickFont:(NSFont *)currentFont
+- (void)pickFont:(NSFont *)pickedFont
 {
   NSFontManager *fontManager = [NSFontManager sharedFontManager];
 
-  [fontManager setSelectedFont:currentPlainFont isMultiple:NO];
+  [fontManager setSelectedFont:pickedFont isMultiple:NO];
   [fontManager orderFrontFontPanel:self];
 }
 
@@ -121,57 +122,32 @@
       return;
     }
 
-  font = [sender convertFont:currentPlainFont];
+  font = [sender convertFont:currentEditorFont];
   fontString = [NSString stringWithFormat:@"%@ %0.1f", 
 	     [font fontName], [font pointSize]];
 
   buttonTag = [button tag];
-  if (buttonTag == 0) // plain text font button
+  if (buttonTag == 0) // Editor font button
     {
-      [plainTextFontField setStringValue:fontString];
-      [plainTextFontField setFont:font];
-      [prefs setString:[font fontName] forKey:EditorPlainTextFont notify:YES];
+      [editorFontField setStringValue:fontString];
+      [editorFontField setFont:font];
+      [prefs setString:[font fontName] forKey:EditorTextFont notify:YES];
       [prefs setFloat:[font pointSize] 
-	       forKey:EditorPlainTextFontSize
+	       forKey:EditorTextFontSize
 	       notify:YES];
     }
-  else if (buttonTag == 1) // rich text font button
+  else if (buttonTag == 1) // Console Fixed Font button
     {
-      [richTextFontField setStringValue:fontString];
-      [richTextFontField setFont:font];
-      [prefs setString:[font fontName] forKey:EditorRichTextFont notify:YES];
+      [consoleFixedFontField setStringValue:fontString];
+      [consoleFixedFontField setFont:font];
+      [prefs setString:[font fontName] forKey:ConsoleFixedFont notify:YES];
       [prefs setFloat:[font pointSize] 
-	       forKey:EditorRichTextFontSize
+	       forKey:ConsoleFixedFontSize
 	       notify:YES];
     }
 }
 
-- (NSColor *)colorFromString:(NSString *)colorString
-{
-  NSArray  *colorComponents;
-  NSString *colorSpaceName;
-  NSColor  *color;
 
-  colorComponents = [colorString componentsSeparatedByString:@" "];
-  colorSpaceName = [colorComponents objectAtIndex:0];
-
-  if ([colorSpaceName isEqualToString:@"White"]) // Treat as WhiteColorSpace
-    {
-      color = [NSColor 
-	colorWithCalibratedWhite:[[colorComponents objectAtIndex:1] floatValue]
-       			   alpha:1.0];
-    }
-  else // Treat as RGBColorSpace
-    {
-      color = [NSColor 
-	colorWithCalibratedRed:[[colorComponents objectAtIndex:1] floatValue]
-			 green:[[colorComponents objectAtIndex:2] floatValue]
-			  blue:[[colorComponents objectAtIndex:3] floatValue]
-			 alpha:1.0];
-    }
-
-  return color;
-}
 
 // ----------------------------------------------------------------------------
 // --- Protocol
@@ -180,29 +156,29 @@
 {
   NSString *fontName;
   float    fontSize;
-  NSFont   *plainFont = [NSFont userFixedPitchFontOfSize:0.0];
-  NSFont   *richFont = [NSFont systemFontOfSize:0.0];
+  NSFont   *editorFont = [NSFont userFixedPitchFontOfSize:0.0];
+  NSFont   *consoleFixedFont = [NSFont userFixedPitchFontOfSize:0.0];
   NSString *val;
 
-  // Plain text font
-  fontName = [prefs stringForKey:EditorPlainTextFont 
-		    defaultValue:[plainFont fontName]];
-  fontSize = [prefs floatForKey:EditorPlainTextFontSize 
-		   defaultValue:[plainFont pointSize]];
-  currentPlainFont = [NSFont fontWithName:fontName size:fontSize];
-  [plainTextFontField setStringValue:[NSString stringWithFormat:@"%@ %0.1f", 
-    [currentPlainFont fontName], [currentPlainFont pointSize]]];
-  [plainTextFontField setFont:currentPlainFont];
+  // Editor font
+  fontName = [prefs stringForKey:EditorTextFont 
+		    defaultValue:[editorFont fontName]];
+  fontSize = [prefs floatForKey:EditorTextFontSize 
+		   defaultValue:[editorFont pointSize]];
+  currentEditorFont = [NSFont fontWithName:fontName size:fontSize];
+  [editorFontField setStringValue:[NSString stringWithFormat:@"%@ %0.1f", 
+    [currentEditorFont fontName], [currentEditorFont pointSize]]];
+  [editorFontField setFont:currentEditorFont];
 
-  // Rich text font
-  fontName = [prefs stringForKey:EditorRichTextFont 
-		    defaultValue:[richFont fontName]];
-  fontSize = [prefs floatForKey:EditorRichTextFontSize
-		   defaultValue:[richFont pointSize]];
-  currentRichFont = [NSFont fontWithName:fontName size:fontSize];
-  [richTextFontField setStringValue:[NSString stringWithFormat:@"%@ %0.1f", 
-    [currentRichFont fontName], [currentRichFont pointSize]]];
-  [richTextFontField setFont:currentRichFont];
+  // Console fixed font
+  fontName = [prefs stringForKey:ConsoleFixedFont 
+		    defaultValue:[consoleFixedFont fontName]];
+  fontSize = [prefs floatForKey:ConsoleFixedFontSize
+		   defaultValue:[consoleFixedFont pointSize]];
+  currentConsoleFixedFont = [NSFont fontWithName:fontName size:fontSize];
+  [consoleFixedFontField setStringValue:[NSString stringWithFormat:@"%@ %0.1f", 
+    [currentConsoleFixedFont fontName], [currentConsoleFixedFont pointSize]]];
+  [consoleFixedFontField setFont:currentConsoleFixedFont];
 
   // Editor window size
   val = [prefs stringForKey:EditorLines defaultValue:@"30"];
@@ -211,16 +187,13 @@
   [editorColumnsField setStringValue:val];
 
   // Colors
-  val = [prefs stringForKey:EditorForegroundColor defaultValue:@"White 0.0"];
-  currentForegroundColor = [self colorFromString:val];
+  currentForegroundColor = [prefs colorForKey:EditorForegroundColor defaultValue:[NSColor blackColor]];
   [foregroundColorWell setColor:currentForegroundColor];
 
-  val = [prefs stringForKey:EditorBackgroundColor defaultValue:@"White 1.0"];
-  currentBackgroundColor = [self colorFromString:val];
+  currentBackgroundColor = [prefs colorForKey:EditorBackgroundColor defaultValue:[NSColor colorWithCalibratedWhite:0.9 alpha:0]];
   [backgroundColorWell setColor:currentBackgroundColor];
 
-  val = [prefs stringForKey:EditorSelectionColor defaultValue:@"White 0.66"];
-  currentSelectionColor = [self colorFromString:val];
+  currentSelectionColor = [prefs colorForKey:EditorSelectionColor defaultValue:[NSColor darkGrayColor]];
   [selectionColorWell setColor:currentSelectionColor];
 }
 
@@ -233,16 +206,16 @@
 // --- Actions
 // ----------------------------------------------------------------------------
 
-- (void)setEditorPlainTextFont:(id)sender
+- (void)setEditorTextFont:(id)sender
 {
-  [[editorFSCView window] makeFirstResponder:plainTextFontButton];
-  [self pickFont:currentPlainFont];
+  [[editorFSCView window] makeFirstResponder:editorFontButton];
+  [self pickFont:currentEditorFont];
 }
 
-- (void)setEditorRichTextFont:(id)sender
+- (void)setConsoleFixedFont:(id)sender
 {
-  [[editorFSCView window] makeFirstResponder:richTextFontButton];
-  [self pickFont:currentRichFont];
+  [[editorFSCView window] makeFirstResponder:consoleFixedFontButton];
+  [self pickFont:currentConsoleFixedFont];
 }
 
 - (void)setEditorSize:(id)sender
@@ -267,62 +240,25 @@
 - (void)setEditorColor:(id)sender
 {
   NSColor  *color;
-  NSColor  *currentColor;
-  NSString *colorString;
   NSString *key;
-  NSString *colorSpaceName;
 
   if (sender == foregroundColorWell)
     {
-      NSLog(@"foregroundColorWell");
       color = [foregroundColorWell color];
-      currentColor = currentForegroundColor;
       key = EditorForegroundColor;
     }
   else if (sender == backgroundColorWell)
     {
-      NSLog(@"backgroundColorWell");
       color = [backgroundColorWell color];
-      currentColor = currentBackgroundColor;
       key = EditorBackgroundColor;
     }
   else // selectionColorWell
     {
-      NSLog(@"selectionColorWell");
       color = [selectionColorWell color];
-      currentColor = currentSelectionColor;
       key = EditorSelectionColor;
     }
 
-  colorSpaceName =  [color colorSpaceName];
-  NSLog(@"Color's colorspace name: '%@'", colorSpaceName);
-  if ([colorSpaceName isEqualToString:@"NSCalibratedRGBColorSpace"])
-    {
-/*      [sender setColor:currentColor];
-      NSRunAlertPanel(@"Set Color", 
-		      @"Please, use RGB color.\n"
-		      @"Color in color well left unchanged",
-		      @"Close", nil, nil);*/
-      colorString = [NSString stringWithFormat:@"RGB %0.1f %0.1f %0.1f",
-		  [color redComponent], 
-		  [color greenComponent],
-		  [color blueComponent]];
-    }
-  else if ([colorSpaceName isEqualToString:@"NSCalibratedWhiteColorSpace"])
-    {
-      colorString = [NSString stringWithFormat:@"White %0.1f", 
-		  [color whiteComponent]];
-    }
-  else
-    {
-      return;
-    }
-
-  currentColor = color;
-
-  NSLog(@"Selected color: '%@'", colorString);
-
-  [prefs setString:colorString forKey:key notify:YES];
+  [prefs setColor:color forKey:key notify:YES];
 }
 
 @end

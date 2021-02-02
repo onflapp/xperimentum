@@ -1,9 +1,10 @@
 /*
 **  ObjCCommentHandler.m
 **
-**  Copyright (c) 2003
+**  Copyright (c) 2003-2016
 **
 **  Author: Yen-Ju  <yjchenx@hotmail.com>
+**          Riccardo Mottola
 **
 **  This program is free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -38,7 +39,7 @@
 {
   if (_commentType == SingleLineComment)
     {
-      if ((element == 0x0A) || (element == 0x0D))
+      if ((element == 0x0A) || (element == 0x0D) || (element == 0x04))
         {
           _commentType = NoComment;
         }
@@ -47,17 +48,20 @@
 
 - (void)symbol:(unichar)element 
 {
-  if (_preChar == '/')
+  if (!_stringBegin)
     {
-      if (element == '*')
-        _commentType = MultipleLineComment;
-      else if (element == '/')
-        _commentType = SingleLineComment;
-         
-    }
-  else if ((element == '/') && (_preChar == '*'))
-    {
-      _commentType = NoComment;
+      if (_preChar == '/')
+	{
+	  if (element == '*')
+	    _commentType = MultipleLineComment;
+	  else if (element == '/')
+	    _commentType = SingleLineComment;
+	  
+	}
+      else if ((element == '/') && (_preChar == '*'))
+	{
+	  _commentType = NoComment;
+	}
     }
 
   if (_commentType == NoComment)

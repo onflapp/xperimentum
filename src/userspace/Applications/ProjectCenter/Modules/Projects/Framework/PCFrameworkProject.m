@@ -1,9 +1,10 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2005-2013 Free Software Foundation
+   Copyright (C) 2005-2018 Free Software Foundation
 
    Authors: Serg Stoyan
+            Riccardo Mottola
 
    This file is part of GNUstep.
 
@@ -93,7 +94,7 @@
 // --- ProjectType protocol
 // ----------------------------------------------------------------------------
 
-- (PCProject *)createProjectAt:(NSString *)path
+- (PCProject *)createProjectAt:(NSString *)path withOption:projOption
 {
 //  PCFileManager *pcfm = [PCFileManager defaultManager];
   PCFileCreator *pcfc = [PCFileCreator sharedCreator];
@@ -252,6 +253,9 @@
   [mf appendClasses:[projectDict objectForKey:PCClasses]];
   [mf appendOtherSources:[projectDict objectForKey:PCOtherSources]];
 
+  // AutoGSDoc
+  [self appendGSDoc:mf];
+  
   // Tail
   [self appendTail:mf];
 
@@ -273,6 +277,8 @@
   [mff appendString:@"\n#\n# Framework\n#\n"];
   [mff appendString:[NSString stringWithFormat:@"VERSION = %@\n",
     [projectDict objectForKey:PCRelease]]];
+  [mff appendString:
+	 [NSString stringWithFormat:@"PACKAGE_NAME = %@\n", projectName]];
   [mff appendString:[NSString stringWithFormat:@"FRAMEWORK_NAME = %@\n",
     projectName]];
   [mff appendString:[NSString 
@@ -308,6 +314,20 @@
     }
 }
 
+- (void)appendGSDoc:(PCMakefileFactory *)mff
+{
+  [mff appendString:@"\n#\n# AutoGSDoc\n#\n"];
+  [mff appendString: [NSString stringWithFormat:@"DOCUMENT_NAME = %@\n\n", projectName]];
+  [mff appendString: [NSString stringWithFormat:@"%@_AGSDOC_FILES = %@.gsdoc \\\n", 
+                              projectName, projectName]];
+  [mff appendString: [NSString stringWithFormat:@"\t$(%@_HEADER_FILES) \\\n", 
+                              projectName, projectName]];
+  [mff appendString: [NSString stringWithFormat:@"\t$(%@_OBJC_FILES) \\\n", 
+                              projectName, projectName]];
+  [mff appendString: [NSString stringWithFormat:@"\n\n%@_AGSDOC_FLAGS += -MakeFrames YES\n", projectName]];
+}
+
+
 - (void)appendTail:(PCMakefileFactory *)mff
 {
   [mff appendString:@"\n\n#\n# Makefiles\n#\n"];
@@ -315,6 +335,11 @@
   [mff appendString:@"include $(GNUSTEP_MAKEFILES)/aggregate.make\n"];
   [mff appendString:@"include $(GNUSTEP_MAKEFILES)/framework.make\n"];
   [mff appendString:@"-include GNUmakefile.postamble\n"];
+
+  [mff appendString:@"\n\n#Only build documentation if doc=yes was passed on the command line\n#\n"];
+  [mff appendString:@"ifeq ($(doc),yes)\n"];
+  [mff appendString:@"include $(GNUSTEP_MAKEFILES)/documentation.make\n"];
+  [mff appendString:@"endif\n"];
 }
 
 @end

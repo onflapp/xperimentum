@@ -1,9 +1,10 @@
 /*
 **  PCDebuggerView
 **
-**  Copyright (c) 2008
+**  Copyright (c) 2008-2016
 **
-**  Author: Gregory Casamento <greg_casamento@yahoo.com>
+**  Author: Gregory Casamento <greg.casamento@gmail.com>
+**          Riccardo Mottola <rm@gnu.org>
 **
 **  This program is free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -40,112 +41,34 @@
   debugger = theDebugger;
 }
 
+- (id <PCDebuggerViewDelegateProtocol>)delegate
+{
+  return viewDelegate;
+}
+
+- (void) setDelegate:(id <PCDebuggerViewDelegateProtocol>) vd
+{
+  if (viewDelegate != vd)
+    {
+      [viewDelegate release];
+      viewDelegate = vd;
+      [viewDelegate retain];
+    }
+}
+
+
+- (void)setFont:(NSFont *)aFont
+{
+  [viewDelegate setFont:aFont];
+}
+
 /**
  * Log string to the view.
  */
 - (void) logString:(NSString *)str
 	   newLine:(BOOL)newLine
 {
-  NSRange range;
-  BOOL printLine = YES;
-
-  range = [str rangeOfString: @"\032\032"]; // Breakpoint"];
-  if (range.location != NSNotFound)
-    {
-      NSScanner *scanner = [NSScanner scannerWithString: str];      
-      NSCharacterSet *empty = [NSCharacterSet characterSetWithCharactersInString: @""];
-      NSString *file = nil;
-      NSString *line = nil;
-      NSString *bytes = nil;
-      int l = 0, b = 0;
-      
-      [scanner setCharactersToBeSkipped: empty];
-      [scanner scanUpToString: @"\032\032" intoString: NULL];
-      [scanner scanString: @"\032\032" intoString: NULL];
-      [scanner scanUpToString: @":" intoString: &file];
-      [scanner scanString: @":" intoString: NULL];
-      [scanner scanUpToString: @":" intoString: &line];
-      if (line != nil)
-	{
-	  l = [line intValue];
-	  [scanner scanString: @":" intoString: NULL];
-	  [scanner scanUpToString: @":" intoString: &bytes];
-
-	  if (bytes != nil)
-	    {
-	      b = [bytes intValue];     
-	      if (l != 0 && b != 0) // if the line & bytes are parsable, then send the notification.
-		{
-		  NSDictionary *dict = [NSDictionary 
-					 dictionaryWithObjectsAndKeys:
-					   file, @"file", line, @"line", nil];
-		  NSString *statusString = [NSString stringWithFormat: @"Stopped, %@:%@",file,line];
-
-		  [debugger setStatus: statusString];
-		  [NOTIFICATION_CENTER 
-		    postNotificationName: PCProjectBreakpointNotification
-		    object: dict];
-		  [[self window] makeKeyAndOrderFront: self];
-		  printLine = NO;
-		}
-	    }
-	}
-    }
-
-  // NOTE: This works on certain versions of gdb, but we need to come up with another way of getting
-  // the process id in a more generic way.
-  range = [str rangeOfString: @"[New Thread"];
-  if (range.location != NSNotFound)
-    {
-      NSScanner *scanner = [NSScanner scannerWithString: str];      
-      NSString *process = nil;
-
-      [scanner scanUpToString: @"(LWP" intoString: NULL];
-      [scanner scanString: @"(LWP" intoString: NULL];
-      [scanner scanUpToString: @")" intoString: &process];
-      subProcessId = [process intValue];
-    }
-
-  // Check certain status messages from GDB and set the state correctly.
-  range = [str rangeOfString: @"Starting program:"];
-  if (range.location != NSNotFound)
-    {
-      [debugger setStatus: @"Running..."];
-    }
-
-  // Check certain status messages from GDB and set the state correctly.
-  range = [str rangeOfString: @"Program received signal"];
-  if (range.location != NSNotFound)
-    {
-      [debugger setStatus: @"Stopped"];
-    }
-
-  // Check certain status messages from GDB and set the state correctly.
-  range = [str rangeOfString: @"Terminated"];
-  if (range.location != NSNotFound)
-    {
-      [debugger setStatus: @"Terminated"];
-    }
-
-  // Check certain status messages from GDB and set the state correctly.
-  range = [str rangeOfString: @"Program exited"];
-  if (range.location != NSNotFound)
-    {
-      [debugger setStatus: @"Terminated"];
-    }
-
-  // FIXME: Filter this error, until we find a better way to deal with it.
-  range = [str rangeOfString: @"[tcsetpgrp failed in terminal_inferior:"];
-  if (range.location != NSNotFound)
-    {
-      printLine = NO;
-    }
-
-  // if the line is not filtered, print it...
-  if(printLine)
-    {
-      [super logString: str newLine: newLine];
-    }
+  [viewDelegate logString: str newLine: newLine withColor:[viewDelegate debuggerColor]];
 }
 
 - (void) setCurrentFile: (NSString *)fileName
@@ -158,61 +81,41 @@
   return currentFile;
 }
 
-/**
- * lookup the process id.
- */
-/*
-- (int) subProcessId
-{
-  int task_pid = [task processIdentifier];
-  int child_pid = 0;
-  NSArray *entries = [[NSFileManager defaultManager] directoryContentsAtPath: @"/proc"];
-  NSEnumerator *en = [entries objectEnumerator];
-  NSString *entry = nil;
-  
-  // FIXME: I'm looking for a generic way to do this, what we have here is very /proc specific.
-  // which I don't like since it ties this functionality to systems which have /proc.
-  while((entry = [en nextObject]) != nil)
-    {
-      int pid = [entry intValue];
-      if (pid != 0)
-	{
-	  int ppid = getppid(pid);
-	  if (ppid == task_pid)
-	    {
-	      child_pid = pid;
-	      break;
-	    }
-	}
-    }
-  
-  return child_pid;
-}
-*/
-
-- (int) subProcessId
-{
-  return subProcessId;
-}
-
-- (void) interrupt
-{
-  int pid = [self subProcessId];
-  if(pid != 0)
-    {
-#ifndef	__MINGW32__
-      kill(pid,SIGINT);
-#endif
-    }
-}
-
 - (void) terminate
 {
-  [super terminate];
+  [viewDelegate terminate];
 }
 
 - (void) mouseDown: (NSEvent *)event
 {
   // do nothing...
 }
+
+/**
+ * Start the program.
+ */
+- (void) runProgram: (NSString *)path
+ inCurrentDirectory: (NSString *)directory
+      withArguments: (NSArray *)array
+   logStandardError: (BOOL)logError
+{
+  [viewDelegate runProgram: path
+        inCurrentDirectory: directory
+             withArguments: array
+          logStandardError: logError];
+}
+
+- (void) putString: (NSString *)string
+{
+  NSAttributedString* attr = [[NSAttributedString alloc] initWithString:string];
+  [[self textStorage] appendAttributedString:attr];
+  [self scrollRangeToVisible:NSMakeRange([[self string] length], 0)];
+  [viewDelegate putString:string];
+}
+
+- (void) keyDown: (NSEvent*)theEvent
+{
+  [viewDelegate keyDown:theEvent];
+}
+
 @end

@@ -1,9 +1,10 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2001 Free Software Foundation
+   Copyright (C) 2001-2016 Free Software Foundation
 
    Author: Serg Stoyan <stoyan@on.com.ua>
+           Riccardo Mottola <rm@gnu.org>
 
    This file is part of GNUstep.
 
@@ -94,7 +95,7 @@ cleanup(NSMutableDictionary *m, NSString *k)
   // Help text view
   [helpText setDrawsBackground:NO];
   [helpText setTextColor:[NSColor darkGrayColor]];
-  [helpText setFont:[NSFont systemFontOfSize:11.0]];
+  [helpText setFont:[NSFont systemFontOfSize:10.0]];
   [helpText setText:@"Click on the field and drop file in the box above"];
 
   // Document types buttons
@@ -133,7 +134,7 @@ cleanup(NSMutableDictionary *m, NSString *k)
 // --- Actions
 // ----------------------------------------------------------------------------
 
-- (void)setAppType:(id)sender
+- (IBAction)setAppType:(id)sender
 {
   NSString       *appType = [appTypeField stringValue];
   NSMutableArray *libs = [[projectDict objectForKey:PCLibraries] mutableCopy];
@@ -152,10 +153,17 @@ cleanup(NSMutableDictionary *m, NSString *k)
   [self setProjectDictObject:appType forKey:PCAppType notify:YES];
 }
 
-- (void)setAppClass:(id)sender
+- (IBAction)setAppClass:(id)sender
 {
   [self setProjectDictObject:[appClassField stringValue]
                       forKey:PCPrincipalClass
+		      notify:YES];
+}
+
+- (IBAction)setBundleIdentifier:(id)sender
+{
+  [self setProjectDictObject:[bundleIdentifierField stringValue]
+                      forKey:PCBundleIdentifier
 		      notify:YES];
 }
 
@@ -254,7 +262,7 @@ cleanup(NSMutableDictionary *m, NSString *k)
   [docTypesPanel makeKeyAndOrderFront: nil];
 }
 
-- (void)setDocBasedApp: (id)sender
+- (IBAction)setDocBasedApp: (id)sender
 {
   NSString *docBased = [projectDict objectForKey: PCDocumentBasedApp];
 
@@ -334,7 +342,7 @@ cleanup(NSMutableDictionary *m, NSString *k)
     }
 }
 
-- (void)addDocType: (id)sender
+- (IBAction)addDocType: (id)sender
 {
   NSInteger           row;
   NSMutableDictionary *entry = [NSMutableDictionary dictionaryWithCapacity: 6];
@@ -368,7 +376,7 @@ cleanup(NSMutableDictionary *m, NSString *k)
 		      notify: YES];
 }
 
-- (void)removeDocType: (id)sender
+- (IBAction)removeDocType: (id)sender
 {
   int selectedRow = [docTypesList selectedRow];
 
@@ -556,6 +564,7 @@ cleanup(NSMutableDictionary *m, NSString *k)
   // Project Attributes view
   [appTypeField selectItemWithTitle:[projectDict objectForKey:PCAppType]];
   [appClassField setStringValue:[projectDict objectForKey: PCPrincipalClass]];
+  [bundleIdentifierField setStringValue:[projectDict objectForKey: PCBundleIdentifier]];
 
   [appImageField setStringValue:[projectDict objectForKey:PCAppIcon]];
   [helpFileField setStringValue:[projectDict objectForKey:PCHelpFile]];

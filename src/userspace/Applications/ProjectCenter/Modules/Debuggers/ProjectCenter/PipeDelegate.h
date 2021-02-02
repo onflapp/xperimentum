@@ -1,9 +1,10 @@
 /*
-**  PTYView
+**  PipeDelegate
 **
-**  Copyright (c) 2008
+**  Copyright (c) 2008-2016
 **
-**  Author: Gregory Casamento <greg_casamento@yahoo.com>
+**  Author: Gregory Casamento <greg.casamento@gmail.com>
+**          Riccardo Mottola <rm@gnu.org>
 **
 **  This program is free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -23,21 +24,42 @@
 #import <Foundation/Foundation.h>
 #import <AppKit/AppKit.h>
 
-@interface PTYView : NSTextView
+#import "PCDebuggerViewDelegateProtocol.h"
+
+typedef enum PCDebuggerOutputType_enum {
+  PCDBNotFoundRecord = 0,
+  PCDBPromptRecord, 
+  PCDBResultRecord,
+  PCDBConsoleStreamRecord,
+  PCDBTargetStreamRecord,
+  PCDBDebugStreamRecord,
+  PCDBAsyncStatusRecord,
+  PCDBAsyncInfoRecord,
+  PCDBBreakpointRecord,
+  PCDBFrameRecord,
+  PCDBThreadRecord,
+  PCDBAdaExceptionRecord,
+  PCDBEmptyRecord
+} PCDebuggerOutputTypes;
+
+@interface PipeDelegate : NSObject <PCDebuggerViewDelegateProtocol>
 {
+  PCDebugger *debugger;
+  NSTextView *tView;
   NSTask *task;
-  NSFileHandle *master_handle;
-  NSFileHandle *slave_handle;
+  NSFileHandle *stdinHandle;
+  NSFileHandle *stdoutHandle;
   NSFileHandle *error_handle;
-  int master_fd, slave_fd;
+
+  NSColor *userInputColor;
+  NSColor *debuggerColor;
+  NSColor *messageColor;
+  NSColor *errorColor;
+  NSColor *promptColor;
+  NSFont  *font;
+
+  BOOL debuggerStarted;
 }
-
-- (int)openpty;
-
-- (void)logString:(NSString *)str
-          newLine:(BOOL)newLine;
-
-- (void)logData:(NSData *)data;
 
 - (void)logStdOut:(NSNotification *)aNotif;
 
@@ -49,16 +71,6 @@
 
 - (NSString *) stopMessage;
 
-- (void) runProgram: (NSString *)path
- inCurrentDirectory: (NSString *)directory
-      withArguments: (NSArray *)array
-   logStandardError: (BOOL)logError;
-
-- (void) terminate;
-
-- (void) interrupt;
-
-- (void) putString: (NSString *)string;
-
 - (void) putChar:(unichar)ch;
+
 @end

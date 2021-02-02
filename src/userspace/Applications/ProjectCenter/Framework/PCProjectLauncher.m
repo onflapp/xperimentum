@@ -1,10 +1,11 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2000-2014 Free Software Foundation
+   Copyright (C) 2000-2020 Free Software Foundation
 
    Authors: Philippe C.D. Robert
             Serg Stoyan
+	    Riccardo Mottola
 
    This file is part of GNUstep.
 
@@ -32,15 +33,19 @@
 #import <ProjectCenter/PCBundleManager.h>
 #import <ProjectCenter/PCButton.h>
 #import <ProjectCenter/PCLogController.h>
+#import <Protocols/Preferences.h>
+
 
 #import "Modules/Preferences/Misc/PCMiscPrefs.h"
+#import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
+
 
 #ifndef NOTIFICATION_CENTER
 #define NOTIFICATION_CENTER [NSNotificationCenter defaultCenter]
 #endif
 
 #ifndef IMAGE
-#define IMAGE(X) [[[NSImage alloc] initWithContentsOfFile:[[NSBundle mainBundle] pathForImageResource:(X)]] autorelease]
+#define IMAGE(X) [NSImage imageNamed: X]
 #endif
 
 enum {
@@ -144,9 +149,19 @@ enum {
 
   if ((self = [super init]))
     {
-      NSFont *font = [NSFont userFixedPitchFontOfSize: 10.0];
+      id <PCPreferences> prefs;
+      NSFont *font;
+      NSString *fontName;
+      CGFloat  fontSize;
 
       project = aProject;
+
+      prefs = [[project projectManager] prefController];
+      fontName = [prefs stringForKey:ConsoleFixedFont];
+      fontSize = [prefs floatForKey:ConsoleFixedFontSize];
+      font = [NSFont fontWithName:fontName size:fontSize];
+      if (font == nil)
+        font = [NSFont userFixedPitchFontOfSize:0];
 
       textAttributes = 
 	[NSDictionary dictionaryWithObject:font forKey:NSFontAttributeName];
@@ -206,14 +221,33 @@ enum {
 
 - (void)debug:(id)sender
 {
-  NSString        *projectName = [project projectName];
-  NSString        *fp = nil;
+  NSString        *executablePath;
   NSString        *gdbPath = nil;
   NSFileManager   *fm = [NSFileManager defaultManager];
   PCBundleManager *bundleManager = [[project projectManager] bundleManager];
 
-  // Check if project type is executable
-  if (![project isExecutable])
+  executablePath = [project projectPath];
+ 
+  if ([project isExecutable])
+    {
+      NSString *prjType;
+
+      prjType = [project projectTypeName];
+      if ([prjType isEqualToString: @"Application"])
+	{
+          /* MyApplication.app/MyApplication */
+          executablePath = [executablePath stringByAppendingPathComponent:[project projectName]];
+          executablePath = [executablePath stringByAppendingString:@".app"];
+	  executablePath = [executablePath stringByAppendingPathComponent:[project projectName]];
+	}
+      else if ([prjType isEqualToString: @"Tool"])
+	{
+	  /* obj/MyTool */
+          executablePath = [executablePath stringByAppendingPathComponent:@"obj"];
+          executablePath = [executablePath stringByAppendingPathComponent:[project projectName]];
+	}
+    }
+  else
     {
       NSRunAlertPanel(@"Debug",
 		      @"The project is not executable",
@@ -222,31 +256,16 @@ enum {
       return;
     }
 
-
-  /* We try in the order:
-   *  xxx.debug/xxx (gnustep-make v1, application),
-   *  xxx.app/xxx (gnustep-make v1 and v2, application),
-   *  obj/xxx (gnustep-make v1 and v2, tool).
-   */
-  fp = [project projectPath];
-  fp = [fp stringByAppendingPathComponent: [projectName stringByAppendingPathExtension: @"debug"]];
-  fp = [fp stringByAppendingPathComponent: projectName];
-
-  if (! [fm isExecutableFileAtPath: fp])
+#ifdef  __MINGW__
+  /* On windows we need to check the .exe file */
+  if ([[executablePath pathExtension] length] == 0)
     {
-      fp = [project projectPath];
-      fp = [fp stringByAppendingPathComponent: [projectName stringByAppendingPathExtension: @"app"]];
-      fp = [fp stringByAppendingPathComponent: projectName];
-
-      if (! [fm isExecutableFileAtPath: fp])
-	{
-	  fp = [project projectPath];
-	  fp = [fp stringByAppendingPathComponent: @"obj"];
-	  fp = [fp stringByAppendingPathComponent: projectName];
-	}
+      executablePath = [executablePath stringByAppendingPathExtension: @"exe"];
     }
+#endif
 
-  if ([fm isExecutableFileAtPath:fp] == NO)
+  NSLog(@"debug executable launch path: %@", executablePath);
+  if ([fm isExecutableFileAtPath:executablePath] == NO)
     {
       NSRunAlertPanel(@"Debug",
 		      @"No executable! Please build the project first.",
@@ -276,9 +295,11 @@ enum {
   // Debugger
   debugger = [bundleManager objectForBundleType: @"debugger"
 			    protocol: @protocol(CodeDebugger)
-			    fileName: [fp stringByDeletingLastPathComponent]];
-  [debugger debugExecutableAtPath: fp
+			    fileName: [executablePath stringByDeletingLastPathComponent]];
+  [debugger debugExecutableAtPath: executablePath
 	    withDebugger: gdbPath];
+  if (!debugger)
+    NSLog(@"No debugger module found");
 
   // turn debug button off...
   // [debugButton setState:NSOffState];
@@ -292,7 +313,7 @@ enum {
   NSString        *executablePath;
   NSFileManager   *fm;
 
-  executablePath = [NSMutableString stringWithString:[project projectPath]];
+  executablePath = [project projectPath];
 
   // Check if project type is executable
   if ([project isExecutable])

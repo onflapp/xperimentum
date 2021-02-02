@@ -1,10 +1,11 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2002-2010 Free Software Foundation
+   Copyright (C) 2002-2014 Free Software Foundation
 
    Authors: Philippe C.D. Robert
             Serg Stoyan
+            Riccardo Mottola
 
    This file is part of GNUstep.
 
@@ -33,7 +34,8 @@
 
 #define COMMENT_HEADERS      @"\n\n#\n# Header files\n#\n"
 #define COMMENT_RESOURCES    @"\n\n#\n# Resource files\n#\n"
-#define COMMENT_CLASSES      @"\n\n#\n# Class files\n#\n"
+#define COMMENT_CLASSES      @"\n\n#\n# Objective-C Class files\n#\n"
+#define COMMENT_OCPPCLASSES  @"\n\n#\n# Objective-C++ Class files\n#\n"
 #define COMMENT_CFILES       @"\n\n#\n# Other sources\n#\n"
 #define COMMENT_SUBPROJECTS  @"\n\n#\n# Subprojects\n#\n"
 #define COMMENT_APP          @"\n\n#\n# Main application\n#\n"
@@ -84,6 +86,18 @@ static PCMakefileFactory *_factory = nil;
   [mfile appendString: @"ifeq ($(GNUSTEP_MAKEFILES),)\n"];
   [mfile appendString: @" GNUSTEP_MAKEFILES := $(shell gnustep-config "];
   [mfile appendString: @"--variable=GNUSTEP_MAKEFILES 2>/dev/null)\n"];
+  [mfile appendString: @"  ifeq ($(GNUSTEP_MAKEFILES),)\n"];
+  [mfile appendString: @"    $(warning )\n"];
+  [mfile appendString: @"    $(warning Unable to obtain GNUSTEP_MAKEFILES"];
+  [mfile appendString: @" setting from gnustep-config!)\n"];
+  [mfile appendString: @"    $(warning Perhaps gnustep-make is not properly"];
+  [mfile appendString: @" installed,)\n"];
+  [mfile appendString: @"    $(warning so gnustep-config is not in your"];
+  [mfile appendString: @" PATH.)\n"];
+  [mfile appendString: @"    $(warning )\n"];
+  [mfile appendString: @"    $(warning Your PATH is currently $(PATH))\n"];
+  [mfile appendString: @"    $(warning )\n"];
+  [mfile appendString: @"  endif\n"];
   [mfile appendString: @"endif\n"];
   [mfile appendString: @"ifeq ($(GNUSTEP_MAKEFILES),)\n"];
   [mfile appendString: @" $(error You need to set GNUSTEP_MAKEFILES"];
@@ -337,16 +351,50 @@ static PCMakefileFactory *_factory = nil;
 
 - (void)appendClasses:(NSArray *)array forTarget:(NSString *)target
 {
+  NSEnumerator   *oenum;
+  NSMutableArray *marray = nil;
+  NSMutableArray *mmarray = nil;
+  NSString       *file;
+  
   if (array == nil || [array count] == 0)
     {
       return;
     }
 
-  [self appendString:COMMENT_CLASSES];
-  [self appendString:
-    [NSString stringWithFormat: @"%@_OBJC_FILES = \\\n",target]];
+  oenum = [array objectEnumerator];
+  while ((file = [oenum nextObject]))
+    {
+      if ([file hasSuffix: @".m"])
+	{
+	  if (marray == nil)
+	    {
+	      marray = [NSMutableArray array];
+	    }
+	  [marray addObject: file];
+	}
+      else if ([file hasSuffix: @".mm"])
+	{
+	  if (mmarray == nil)
+	    {
+	      mmarray = [NSMutableArray array];
+	    }
+	  [mmarray addObject: file];
+	}
+    }
 
-  [self appendString: [array componentsJoinedByString: @" \\\n"]];
+  if (marray)
+    {
+      [self appendString:COMMENT_CLASSES];
+      [self appendString: [NSString stringWithFormat: @"%@_OBJC_FILES = \\\n",target]];
+      [self appendString: [marray componentsJoinedByString: @" \\\n"]];
+    }
+
+  if (mmarray)
+    {
+      [self appendString:COMMENT_OCPPCLASSES];
+      [self appendString: [NSString stringWithFormat: @"%@_OBJCC_FILES = \\\n",target]];
+      [self appendString: [mmarray componentsJoinedByString: @" \\\n"]];
+    }
 }
 
 - (void)appendOtherSources:(NSArray *)array
@@ -362,6 +410,7 @@ static PCMakefileFactory *_factory = nil;
 - (void)appendOtherSources:(NSArray *)array forTarget: (NSString *)target
 {
   NSMutableArray *marray = nil;
+  NSMutableArray *mmarray = nil;
   NSMutableArray *oarray = nil;
   NSEnumerator   *oenum;
   NSString       *file;
@@ -382,6 +431,14 @@ static PCMakefileFactory *_factory = nil;
 	      marray = [NSMutableArray array];
 	    }
 	  [marray addObject: file];
+	}
+      else if ([file hasSuffix: @".mm"])
+	{
+	  if (mmarray == nil)
+	    {
+	      mmarray = [NSMutableArray array];
+	    }
+	  [mmarray addObject: file];
 	}
       else // non .m file
 	{
@@ -415,6 +472,19 @@ static PCMakefileFactory *_factory = nil;
       oenum = [marray objectEnumerator];
 	
       [self appendString: [NSString stringWithFormat: @"%@_OBJC_FILES += ",pnme]];
+
+      while ((file = [oenum nextObject])) 
+	{
+	  [self appendString: [NSString stringWithFormat: @"\\\n%@ ", file]];
+	}
+    }
+
+  // Add .mm files if any
+  if (mmarray && [marray count] != 0)
+    {
+      oenum = [mmarray objectEnumerator];
+	
+      [self appendString: [NSString stringWithFormat: @"%@_OBJCC_FILES += ",pnme]];
 
       while ((file = [oenum nextObject])) 
 	{

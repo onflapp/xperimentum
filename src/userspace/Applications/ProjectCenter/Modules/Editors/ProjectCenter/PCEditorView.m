@@ -4,7 +4,7 @@
     Implementation of the PCEditorView class for the
     ProjectManager application.
 
-    Copyright (C) 2005-2014 Free Software Foundation
+    Copyright (C) 2005-2020 Free Software Foundation
       Saso Kiselkov
       Serg Stoyan
       Riccardo Mottola
@@ -40,21 +40,12 @@
 
 #import <ctype.h>
 
+#import <ProjectCenter/PCProjectManager.h>
+
 #import "PCEditor.h"
 #import "SyntaxHighlighter.h"
 #import "LineJumper.h"
-
-static inline float my_abs(float aValue)
-{
-  if (aValue >= 0)
-    {
-      return aValue;
-    }
-  else
-    {
-      return -aValue;
-    }
-}
+#import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
 
 /**
  * Computes the indenting offset of the last line before the passed
@@ -177,9 +168,9 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
 }
 
 // Go backward to first '\n' char or start of file
-- (int)lineStartIndexForIndex:(int)index forString:(NSString *)string
+- (NSInteger)lineStartIndexForIndex:(NSInteger)index forString:(NSString *)string
 {
-  int line_start;
+  NSInteger line_start;
 
   // Get line start index moving from index backwards
   for (line_start = index;line_start > 0;line_start--)
@@ -197,10 +188,10 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
   return line_start > index ? index : line_start;
 }
 
-- (int)lineEndIndexForIndex:(int)index forString:(NSString *)string
+- (NSInteger)lineEndIndexForIndex:(NSInteger)index forString:(NSString *)string
 {
-  int line_end;
-  int string_length = [string length];
+  NSInteger line_end;
+  NSInteger string_length = [string length];
 
   // Get line start index moving from index backwards
   for (line_end = index;line_end < string_length;line_end++)
@@ -211,30 +202,30 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
 	}
     }
 
-  NSLog(@"index: %i end: %i", index, line_end);
+  NSLog(@"index: %li end: %li", (long)index, (long)line_end);
 
   return line_end < string_length ? line_end : string_length;
 }
 
-- (int)previousLineStartIndexForIndex:(int)index forString:(NSString *)string
+- (NSInteger)previousLineStartIndexForIndex:(NSInteger)index forString:(NSString *)string
 {
-  int cur_line_start;
-  int prev_line_start;
+  NSInteger cur_line_start;
+  NSInteger prev_line_start;
 
   cur_line_start = [self lineStartIndexForIndex:index forString:string];
   prev_line_start = [self lineStartIndexForIndex:cur_line_start-1
  				       forString:string];
 
-  NSLog(@"index: %i prev_start: %i", index, prev_line_start);
+  NSLog(@"index: %li prev_start: %li", (long)index, (long)prev_line_start);
 
   return prev_line_start;
 }
 
-- (int)nextLineStartIndexForIndex:(int)index forString:(NSString *)string
+- (NSInteger)nextLineStartIndexForIndex:(NSInteger)index forString:(NSString *)string
 {
-  int cur_line_end;
-  int next_line_start;
-  int string_length = [string length];
+  NSInteger cur_line_end;
+  NSInteger next_line_start;
+  NSInteger string_length = [string length];
 
   cur_line_end = [self lineEndIndexForIndex:index forString:string];
   next_line_start = cur_line_end + 1;
@@ -249,12 +240,13 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
     }
 }
 
-- (unichar)firstCharOfLineForIndex:(int)index forString:(NSString *)string
+- (unichar)firstCharOfLineForIndex:(NSInteger)index forString:(NSString *)string
 {
-  int line_start = [self lineStartIndexForIndex:index forString:string];
-  int i;
+  NSInteger line_start = [self lineStartIndexForIndex:index forString:string];
+  NSInteger i;
   unichar c;
 
+  c = 0;
   // Get leading whitespaces range
   for (i = line_start; i >= 0; i++)
     {
@@ -270,30 +262,25 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
   return c;
 }
 
-- (unichar)firstCharOfPrevLineForIndex:(int)index forString:(NSString *)string
+- (unichar)firstCharOfPrevLineForIndex:(NSInteger)index forString:(NSString *)string
 {
-  int line_start = [self previousLineStartIndexForIndex:index 
+  NSInteger line_start = [self previousLineStartIndexForIndex:index 
 						   forString:string];
 
   return [self firstCharOfLineForIndex:line_start forString:string];
 }
 
-- (unichar)firstCharOfNextLineForIndex:(int)index
-{
-  return 0;
-}
-
 - (void)performIndentation
 {
-  NSString *string = [self string];
-  int      location;
-  int      line_start;
-  int      offset;
-  unichar  c, plfc, clfc;
-  NSRange  wsRange;
+  NSString  *string = [self string];
+  NSInteger location;
+  NSInteger line_start;
+  NSInteger offset;
+  unichar   c, plfc, clfc;
+  NSRange   wsRange;
   NSMutableString *indentString;
   NSCharacterSet  *wsCharSet = [NSCharacterSet whitespaceCharacterSet];
-  int i;
+  NSInteger i;
 //  int point;
 
   location = [self selectedRange].location;
@@ -374,23 +361,9 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
 
 + (NSFont *)defaultEditorFont
 {
-  NSUserDefaults *df = [NSUserDefaults standardUserDefaults];
-  NSString       *fontName;
-  float          fontSize;
   NSFont         *font = nil;
 
-  fontName = [df objectForKey:@"EditorFont"];
-  fontSize = [df floatForKey:@"EditorFontSize"];
-
-  if (fontName != nil)
-    {
-      font = [NSFont fontWithName:fontName size:fontSize];
-    }
-  if (font == nil)
-    {
-      font = [NSFont userFixedPitchFontOfSize:fontSize];
-    }
-
+  font = [NSFont userFixedPitchFontOfSize:0];
   return font;
 }
 
@@ -413,6 +386,50 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
 + (NSFont *)defaultEditorBoldItalicFont
 {
   NSFont *font = [self defaultEditorFont];
+
+  return [[NSFontManager sharedFontManager] convertFont:font
+                                            toHaveTrait:NSBoldFontMask |
+                                                        NSItalicFontMask];
+}
+
+- (NSFont *)editorFont
+{
+  id <PCPreferences> prefs;
+  NSString          *fontName;
+  CGFloat            fontSize;
+  NSFont            *font = nil;
+
+  prefs = [[[editor editorManager] projectManager] prefController];
+
+  fontName = [prefs stringForKey:EditorTextFont];
+  fontSize = [prefs floatForKey:EditorTextFontSize];
+
+  font = [NSFont fontWithName:fontName size:fontSize];
+  if (font == nil)
+    font = [NSFont userFixedPitchFontOfSize:0]; 
+
+  return font;
+}
+
+- (NSFont *)editorBoldFont
+{
+  NSFont *font = [self editorFont];
+
+  return [[NSFontManager sharedFontManager] convertFont:font
+                                            toHaveTrait:NSBoldFontMask];
+}
+
+- (NSFont *)editorItalicFont
+{
+  NSFont *font = [self editorFont];
+
+  return [[NSFontManager sharedFontManager] convertFont:font
+                                            toHaveTrait:NSItalicFontMask];
+}
+
+- (NSFont *)editorBoldItalicFont
+{
+  NSFont *font = [self editorFont];
 
   return [[NSFontManager sharedFontManager] convertFont:font
                                             toHaveTrait:NSBoldFontMask |
@@ -443,12 +460,12 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
   [super dealloc];
 }
 
-- (void)setEditor:(PCEditor *)anEditor
+- (void)setEditor:(NSObject <CodeEditor> *)anEditor
 {
-  editor = anEditor;
+  editor = (PCEditor *)anEditor;
 }
 
-- (PCEditor *)editor
+- (NSObject <CodeEditor> *)editor
 {
   return editor;
 }
@@ -474,12 +491,14 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
 
 - (void)drawRect:(NSRect)r
 {
-  NSRange drawnRange;
-
   if (highlighter)
     {
+      NSRange drawnRange;
+
       drawnRange = [[self layoutManager] 
 	glyphRangeForBoundingRect:r inTextContainer:[self textContainer]];
+      drawnRange = [[self layoutManager] characterRangeForGlyphRange:drawnRange
+                                                    actualGlyphRange:NULL];
       [highlighter highlightRange:drawnRange];
     }
 
@@ -492,6 +511,10 @@ static int ComputeIndentingOffset(NSString * string, unsigned int start)
 	 [[[SyntaxHighlighter alloc] initWithFileType:fileType
 					  textStorage:[self textStorage]]
 					  autorelease]);
+  [highlighter setNormalFont: [self editorFont]];
+  [highlighter setBoldFont: [self editorBoldFont]];
+  [highlighter setItalicFont: [self editorItalicFont]];
+  [highlighter setBoldItalicFont: [self editorBoldItalicFont]];
 }
 
 - (void)insertText:text

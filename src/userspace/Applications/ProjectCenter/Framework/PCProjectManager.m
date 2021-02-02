@@ -1,7 +1,7 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2000-2010 Free Software Foundation
+   Copyright (C) 2000-2017 Free Software Foundation
 
    Authors: Philippe C.D. Robert
             Serg Stoyan
@@ -759,6 +759,7 @@ NSString *PCActiveProjectDidChangeNotification = @"PCActiveProjectDidChange";
   NSString               *className = [projectTypes objectForKey:projectType];
   PCProject<ProjectType> *projectCreator;
   PCProject              *project = nil;
+  NSString               *subType = nil;
  
   if ((project = [loadedProjects objectForKey: [aPath stringByDeletingLastPathComponent]]) != nil)
     {
@@ -766,6 +767,9 @@ NSString *PCActiveProjectDidChangeNotification = @"PCActiveProjectDidChange";
       return project;
     }
 
+  if ([projectType isEqualToString:@"Application"])
+    subType = PCProjectInterfaceGorm;
+ 
   projectCreator = [bundleManager objectForClassName:className 
 					  bundleType:@"project"
 					    protocol:@protocol(ProjectType)];
@@ -791,7 +795,7 @@ NSString *PCActiveProjectDidChangeNotification = @"PCActiveProjectDidChange";
     }
 
   // Create project
-  if (!(project = [projectCreator createProjectAt:aPath])) 
+  if (!(project = [projectCreator createProjectAt:aPath withOption:subType])) 
     {
       NSRunAlertPanel(@"New Project",
 		      @"Project %@ could not be created.\nReport bug, please!",
@@ -1333,6 +1337,9 @@ NSString *PCActiveProjectDidChangeNotification = @"PCActiveProjectDidChange";
   // Create subproject
   subproject = [self createSubprojectOfType:spType path:spPath];
 
+  //  PCLogInfo(self, @"{createSubproject} add to %@", [activeProject projectName]);
+  [activeProject addSubproject:subproject];
+
   return;
 }
 
@@ -1342,11 +1349,15 @@ NSString *PCActiveProjectDidChangeNotification = @"PCActiveProjectDidChange";
   NSString               *className = [projectTypes objectForKey:projectType];
   PCProject<ProjectType> *projectCreator;
   PCProject              *subproject = nil;
+  NSString               *subType = nil;
+
+  if ([projectType isEqualToString:@"Application"])
+    subType = PCProjectInterfaceGorm;
 
   projectCreator = [bundleManager objectForClassName:className 
 					  bundleType:@"project"
 					    protocol:@protocol(ProjectType)];
-  if (!(subproject = [projectCreator createProjectAt:aPath])) 
+  if (!(subproject = [projectCreator createProjectAt:aPath withOption:subType])) 
     {
       NSRunAlertPanel(@"New Subproject",
 		      @"Internal error!"
@@ -1357,9 +1368,6 @@ NSString *PCActiveProjectDidChangeNotification = @"PCActiveProjectDidChange";
   [subproject setIsSubproject:YES];
   [subproject setSuperProject:activeProject];
   [subproject setProjectManager:self];
-
-//  PCLogInfo(self, @"{createSubproject} add to %@", [activeProject projectName]);
-  [activeProject addSubproject:subproject];
 
   return subproject;
 }

@@ -1,10 +1,9 @@
 /*
-**  PCDebuggerView
+**  PCDebuggerViewDelegateProtocol.h
 **
-**  Copyright (c) 2008-2020
+**  Copyright (c) 2016-2020
 **
-**  Author: Gregory Casamento <greg.casamento@gmail.com>
-**          Riccardo Mottola <rm@gnu.org>
+**  Author: Riccardo Mottola <rm@gnu.org>
 **
 **  This program is free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -21,35 +20,47 @@
 **  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#import <Foundation/NSString.h>
-#import <AppKit/NSTextView.h>
+#import <Foundation/NSObject.h>
 
-#import "PCDebuggerViewDelegateProtocol.h"
-
+@class NSColor;
+@class NSTextView;
+@class NSArray;
+@class NSString;
 @class PCDebugger;
 
-@interface PCDebuggerView : NSTextView
-{
-  PCDebugger *debugger;
-  id <PCDebuggerViewDelegateProtocol> viewDelegate;
-  NSString *currentFile;
-}
-
-- (void) setDebugger:(PCDebugger *)theDebugger;
-- (id <PCDebuggerViewDelegateProtocol>)delegate;
-- (void) setDelegate:(id <PCDebuggerViewDelegateProtocol>) vd;
-- (void) setCurrentFile: (NSString *)fileName;
-- (NSString *) currentFile;
+@protocol PCDebuggerViewDelegateProtocol <NSObject>
 
 - (void)setFont:(NSFont *)font;
 
+- (NSColor *)userInputColor;
+- (NSColor *)debuggerColor;
+- (NSColor *)messageColor;
+- (NSColor *)errorColor;
 
+- (NSTextView *)textView;
+- (void)setTextView: (NSTextView *)tv;
+- (PCDebugger *)debugger;
+- (void)setDebugger:(PCDebugger *)dbg;
 
 - (void) runProgram: (NSString *)path
  inCurrentDirectory: (NSString *)directory
       withArguments: (NSArray *)array
    logStandardError: (BOOL)logError;
 
+- (void)logString:(NSString *)str
+          newLine:(BOOL)newLine
+        withColor:(NSColor *)color;
+
+- (void) setBreakpoints:(NSArray *)breakpoints;
+
+- (void) terminate;
+
+- (void) interrupt;
+
 - (void) putString: (NSString *)string;
+
+- (void) keyDown: (NSEvent*)theEvent;
+
+- (void) debuggerSetup;
 
 @end

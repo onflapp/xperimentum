@@ -1,9 +1,10 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2005 Free Software Foundation
+   Copyright (C) 2005-2015 Free Software Foundation
 
    Authors: Serg Stoyan
+            Riccardo Mottola
 
    This file is part of GNUstep.
 
@@ -32,6 +33,9 @@
 
 @protocol PCPreferences <NSObject>
 
+- (NSColor *)colorFromString:(NSString *)colorString;
+- (NSString *)stringFromColor:(NSColor *)color;
+
 - (NSString *)stringForKey:(NSString *)key;
 - (NSString *)stringForKey:(NSString *)key
 	      defaultValue:(NSString *)defaultValue;
@@ -44,6 +48,10 @@
 - (float)floatForKey:(NSString *)key
 	defaultValue:(float)defaultValue;
 
+- (NSColor *)colorForKey:(NSString *)key;
+- (NSColor *)colorForKey:(NSString *)key
+        defaultValue:(NSColor *)defaultValue;
+
 - (void)setString:(NSString *)stringValue 
 	   forKey:(NSString *)aKey
 	   notify:(BOOL)notify;
@@ -53,7 +61,9 @@
 - (void)setFloat:(float)floatValue
 	  forKey:(NSString *)aKey
 	  notify:(BOOL)notify;
-
+- (void)setColor:(NSColor *)color
+	  forKey:(NSString *)aKey
+	  notify:(BOOL)notify;
 @end
 
 @protocol PCPrefsSection <NSObject>

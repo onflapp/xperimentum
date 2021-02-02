@@ -1,7 +1,7 @@
 /*
 **  PCDebugger
 **
-**  Copyright (c) 2008
+**  Copyright (c) 2008-2016
 **
 **  Author: Gregory Casamento <greg_casamento@yahoo.com>
 **
@@ -27,15 +27,35 @@
 
 #import <Protocols/CodeDebugger.h>
 
+extern const NSString *PCBreakTypeKey;
+extern NSString *PCBreakTypeByLine;
+extern NSString *PCBreakTypeMethod;
+
+extern const NSString *PCBreakMethod;
+extern const NSString *PCBreakFilename;
+extern const NSString *PCBreakLineNumber;
+extern NSString *PCDBDebuggerStartedNotification;
+
 @interface PCDebugger : NSObject <CodeDebugger>
 {
   id             debuggerView;
   id             debuggerWindow;
   id             statusField;
-  NSString       *path;
+  NSString       *executablePath;
   NSString       *debuggerPath;
+  int            subProcessId;
+  float          gdbVersion;
+  NSMutableArray *breakpoints;
 }
 
 - (void) setStatus: (NSString *) status;
 - (NSString *) status;
+- (NSString *)executablePath;
+- (void)setExecutablePath:(NSString *)p;
+- (void) interrupt;
+- (int) subProcessId;
+- (void) setSubProcessId:(int)pid;
+- (float) gdbVersion;
+- (void) setGdbVersion:(float)ver;
+
 @end

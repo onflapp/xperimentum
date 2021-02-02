@@ -1,9 +1,10 @@
 /*
-**  PCDebugger
+**  PCDebugger.m
 **
-**  Copyright (c) 2008
+**  Copyright (c) 2008-2020
 **
-**  Author: Gregory Casamento <greg_casamento@yahoo.com>
+**  Author: Gregory Casamento <greg.casamento@gmail.com>
+**          Riccardo Mottola <rm@gnu.org>>
 **
 **  This program is free software; you can redistribute it and/or modify
 **  it under the terms of the GNU General Public License as published by
@@ -20,9 +21,22 @@
 **  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+#ifdef	__MINGW32__
+#undef _WIN32_WINNT
+#define _WIN32_WINNT 0x0501 // Minimal target is Windows XP
+
+#include <windows.h>
+
+#endif
+
 #import <AppKit/AppKit.h>
 #import "PCDebugger.h"
 #import "PCDebuggerView.h"
+
+#import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
+#import "PCDebuggerViewDelegateProtocol.h"
+#import "PipeDelegate.h"
+
 
 #ifndef NOTIFICATION_CENTER
 #define NOTIFICATION_CENTER [NSNotificationCenter defaultCenter]
@@ -37,6 +51,14 @@ static NSImage  *stepInImage = nil;
 static NSImage  *stepOutImage = nil;
 static NSImage  *upImage = nil;
 static NSImage  *downImage = nil;
+
+const NSString *PCBreakTypeKey = @"BreakType";
+NSString *PCBreakTypeByLine = @"BreakTypeLine";
+NSString *PCBreakTypeMethod = @"BreakTypeMethod";
+const NSString *PCBreakMethod = @"BreakMethod";
+const NSString *PCBreakFilename = @"BreakFilename";
+const NSString *PCBreakLineNumber = @"BreakLineNumber";
+NSString *PCDBDebuggerStartedNotification = @"PCDBDebuggerStartedNotification";
 
 @implementation PCDebugger
 + (void) initialize
@@ -95,10 +117,30 @@ static NSImage  *downImage = nil;
     }
 }
 
+- (NSFont *)consoleFont
+{
+  NSUserDefaults *defs;
+  NSString       *fontName;
+  CGFloat         fontSize;
+  NSFont         *font = nil;
+
+  defs = [NSUserDefaults standardUserDefaults];
+  fontName = [defs stringForKey:ConsoleFixedFont];
+  fontSize = [defs floatForKey:ConsoleFixedFontSize];
+
+  font = [NSFont fontWithName:fontName size:fontSize];
+  if (font == nil)
+    font = [NSFont userFixedPitchFontOfSize:0];
+
+  return font;
+}
+
 - (id) init
 {
   if((self = [super init]) != nil)
     {
+    NSLog(@"PCDebugger Init");
+      id <PCDebuggerViewDelegateProtocol> viewDelegate;
       // initialization here...
       if([NSBundle loadNibNamed: @"PCDebugger" owner: self] == NO)
 	{
@@ -106,6 +148,22 @@ static NSImage  *downImage = nil;
 	}
 
       [(PCDebuggerView *)debuggerView setDebugger:self];
+      viewDelegate = [[PipeDelegate alloc] init];
+      [debuggerView setDelegate:viewDelegate];
+      [viewDelegate setTextView:debuggerView];
+      [viewDelegate setDebugger:self];
+      [viewDelegate release];
+      [debuggerView setFont: [self consoleFont]];
+
+      subProcessId = 0;
+      gdbVersion = 0.0;
+
+      breakpoints = nil;
+
+      [[NSNotificationCenter defaultCenter] addObserver: self
+       selector: @selector(handleNotification:)
+       name: PCDBDebuggerStartedNotification
+       object: nil];
     }
   return self;
 }
@@ -113,7 +171,7 @@ static NSImage  *downImage = nil;
 -(void) debugExecutableAtPath: (NSString *)filePath
 		 withDebugger: (NSString *)debugger
 {
-  ASSIGN(path,filePath);
+  ASSIGN(executablePath,filePath);
   ASSIGN(debuggerPath,debugger);
   [debuggerWindow setTitle: [NSString stringWithFormat: @"Debugger (%@)",filePath]];
   [self show];
@@ -128,10 +186,44 @@ static NSImage  *downImage = nil;
 - (void) startDebugger
 {
   [debuggerView runProgram: debuggerPath
-		inCurrentDirectory: [path stringByDeletingLastPathComponent]
-		withArguments: [[NSArray alloc] initWithObjects: @"-f", path, nil]
+		inCurrentDirectory: [executablePath stringByDeletingLastPathComponent]
+                withArguments: [[NSArray alloc] initWithObjects: @"--interpreter=mi", @"-f", executablePath, nil]
 		logStandardError: YES];
-}   
+  
+}
+
+- (void) initBreakpoints
+{
+  id <PCDebuggerViewDelegateProtocol> viewDelegate;
+
+  breakpoints = [[NSMutableArray alloc] init];
+  /* CRUDE EXAMPLES * TODO FIXME *
+  NSDictionary *dP;
+  NSLog(@"initing breakpoints");
+
+  dP = [NSDictionary dictionaryWithObjectsAndKeys: PCBreakTypeMethod, PCBreakTypeKey, @"[NSException raise]", PCBreakMethod, nil];
+  //  [breakpoints addObject:dP];
+  dP = [NSDictionary dictionaryWithObjectsAndKeys: PCBreakTypeByLine, PCBreakTypeKey, @"AppController.m", PCBreakFilename, [NSNumber numberWithInt:100], PCBreakLineNumber, nil];
+  [breakpoints addObject:dP];
+  */ 
+
+  viewDelegate = [debuggerView delegate];
+  [viewDelegate setBreakpoints:breakpoints];
+}
+
+- (void) debuggerSetup
+{
+  id <PCDebuggerViewDelegateProtocol> viewDelegate;
+  viewDelegate = [debuggerView delegate];
+  [viewDelegate debuggerSetup];
+}
+
+- (void) handleNotification: (NSNotification *)notification
+{
+  [self initBreakpoints];
+  [self debuggerSetup];
+}
+
 
 - (void) awakeFromNib
 {
@@ -141,7 +233,6 @@ static NSImage  *downImage = nil;
   [debuggerWindow setToolbar: toolbar];
   RELEASE(toolbar);
 
-  [debuggerView setFont: [NSFont userFixedPitchFontOfSize: 0]];
   [debuggerWindow setFrameAutosaveName: @"PCDebuggerWindow"];
   [self setStatus: @"Idle."];
 }
@@ -166,70 +257,124 @@ static NSImage  *downImage = nil;
   debuggerView = view;
 }
 
-- (NSString *)path
+- (NSString *)executablePath
 {
-  return path;
+  return executablePath;
 }
 
-- (void)setPath:(NSString *)p
+- (void)setExecutablePath:(NSString *)p
 {
-  ASSIGN(path,p);
+  ASSIGN(executablePath,p);
+}
+
+- (int) subProcessId
+{
+  return subProcessId;
+}
+
+- (void) setSubProcessId: (int)pid
+{
+  subProcessId = pid;
+}
+
+- (float) gdbVersion
+{
+  return gdbVersion;
+}
+
+- (void) setGdbVersion:(float)ver
+{
+  gdbVersion = ver;
+}
+
+// kill process
+- (void) interrupt
+{
+  if(subProcessId != 0)
+    {
+#ifndef	__MINGW32__
+      kill(subProcessId,SIGINT);
+#else
+      HANDLE proc;
+
+      proc = OpenProcess(PROCESS_ALL_ACCESS, FALSE, (DWORD)subProcessId);
+      if (proc == NULL)
+        {
+          DWORD lastError = GetLastError();
+          NSLog(@"error opening process %lu", (unsigned long)lastError);
+          return;
+        }
+      if (DebugBreakProcess(proc))
+        {
+          DWORD lastError = GetLastError();
+          NSLog(@"error sending break %lu", (unsigned long)lastError);
+        }
+      else
+        {
+          NSLog(@"break sent successfully");
+        }
+      CloseHandle(proc);
+#endif
+    }
 }
 
 // action methods for toolbar...
 - (void) go: (id) sender
 {
-  [self setStatus: @"Running..."];
+  /* each run makes a new PID but we parse it only if non-zero */
+  [self setSubProcessId:0];
   [debuggerView putString: @"run\n"];
 }
 
 - (void) pause: (id) sender
 {
   [self setStatus: @"Stopped."];
-  [debuggerView interrupt];
+  [self interrupt];
 }
 
 - (void) continue: (id) sender
 {
-  [self setStatus: @"Continue..."];
+  // [self setStatus: @"Continue..."];
   [debuggerView putString: @"continue\n"];
 }
 
 - (void) restart: (id) sender
 {
-  [self setStatus: @"Restarting..."];
-  [debuggerView interrupt];
+  // [self setStatus: @"Restarting..."];
+  [self interrupt];
+  /* each run makes a new PID but we parse it only if non-zero */
+  [self setSubProcessId:0];
   [debuggerView putString: @"run\n"];
-  [self setStatus: @"Running..."];
+  // [self setStatus: @"Running..."];
 }
 
 - (void) next: (id) sender
 {
-  [self setStatus: @"Going to next line."];
+  // [self setStatus: @"Going to next line."];
   [debuggerView putString: @"next\n"];
 }
 
 - (void) stepInto: (id) sender
 {
-  [self setStatus: @"Stepping into method."];
+  // [self setStatus: @"Stepping into method."];
   [debuggerView putString: @"step\n"];  
 }
 
 - (void) stepOut: (id) sender
 {
-  [self setStatus: @"Finishing method."];
+  // [self setStatus: @"Finishing method."];
   [debuggerView putString: @"finish\n"];  
 }
 
 - (void) up: (id) sender
 {
-  [self setStatus: @"Up to calling method."];
+  // [self setStatus: @"Up to calling method."];
   [debuggerView putString: @"up\n"];  
 }
 
 - (void) down: (id) sender
 {
-  [self setStatus: @"Down to called method."];
+  // [self setStatus: @"Down to called method."];
   [debuggerView putString: @"down\n"];  
 }
 
@@ -246,7 +391,7 @@ static NSImage  *downImage = nil;
 
 - (void) dealloc
 {
-  [debuggerWindow close];
+  [breakpoints release];
   [super dealloc];
 }
 @end

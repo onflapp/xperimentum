@@ -1,7 +1,7 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2002-2010 Free Software Foundation
+   Copyright (C) 2002-2015 Free Software Foundation
 
    Authors: Philippe C.D. Robert
             Serg Stoyan
@@ -26,6 +26,10 @@
 
 #import "PCEditor.h"
 #import "PCEditorView.h"
+
+#import <Protocols/Preferences.h>
+#import "Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h"
+#import <ProjectCenter/PCProjectManager.h>
 
 @implementation PCEditor (UInterface)
 
@@ -260,6 +264,7 @@
   NSAttributedString  *attributedString = [NSAttributedString alloc];
   NSMutableDictionary *attributes = [NSMutableDictionary new];
   NSFont              *font;
+  id <PCPreferences>  prefs;
 
   // Inform about future file opening
   [[NSNotificationCenter defaultCenter]
@@ -269,12 +274,16 @@
   _editorManager = editorManager;
   _path = [filePath copy];
   _isEditable = editable;
+  prefs = [[_editorManager projectManager] prefController];
 
   // Prepare
   font = [NSFont userFixedPitchFontOfSize:0.0];
   if (editable)
     {
-      textBackground = backgroundColor;
+      NSColor *col;
+
+      col = [prefs colorForKey:EditorBackgroundColor defaultValue:backgroundColor];
+      textBackground = col;
     }
   else
     {
@@ -283,6 +292,7 @@
 
   [attributes setObject:font forKey:NSFontAttributeName];
   [attributes setObject:textBackground forKey:NSBackgroundColorAttributeName];
+  [attributes setObject:[prefs colorForKey:EditorForegroundColor defaultValue:textColor] forKey:NSForegroundColorAttributeName];
 
   text  = [NSString stringWithContentsOfFile:_path];
   attributedString = [attributedString initWithString:text attributes:attributes];
@@ -478,10 +488,16 @@
     }
 
   bundle = [NSBundle bundleForClass:NSClassFromString(@"PCEditor")];
+
   imagePath = [bundle pathForResource:imageName ofType:@"tiff"];
-
-  image = [[NSImage alloc] initWithContentsOfFile:imagePath];
-
+  if (imagePath)
+    {
+      image = [[NSImage alloc] initWithContentsOfFile:imagePath];
+    }
+  else
+    {
+      NSLog(@"no image for %@", imageName);
+    }
   return AUTORELEASE(image);
 }
 
@@ -534,7 +550,7 @@
   [aParser setString:[_storage string]];
 
   // If item is .m or .h file show class list
-  if ([[item pathExtension] isEqualToString:@"m"]
+  if ([[item pathExtension] isEqualToString:@"m"] || [[item pathExtension] isEqualToString:@"mm"]
       || [[item pathExtension] isEqualToString:@"h"])
     {
       ASSIGN(parserClasses, [aParser classNames]);

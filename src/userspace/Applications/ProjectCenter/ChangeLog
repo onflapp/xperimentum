@@ -1,3 +1,397 @@
+2020-09-08 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/SyntaxHighlighter.h
+	* Modules/Editors/ProjectCenter/SyntaxHighlighter.m
+	Add setters for fonts.
+
+	* Modules/Editors/ProjectCenter/PCEditorView.h
+	* Modules/Editors/ProjectCenter/PCEditorView.m
+	Separate font accessors in to class and instance methods.
+	Do not use preferences in class methods, since they are outside the
+	protocol.
+
+2020-09-08 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectLauncher.m
+	Access Preferences through its protocol, since the launcher is in the
+	Framework.
+
+2020-04-16 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/PCEditorView.m:(drawRect:)
+	Fix range to use characters and not glyphs, sicne highlighting is based on chars.
+
+2020-03-24 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectLauncher.m
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PCDebuggerView.h
+	* Modules/Debuggers/ProjectCenter/PCDebuggerViewDelegateProtocol.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	* Modules/Editors/ProjectCenter/PCEditorView.m
+	Uniform  font defaults to use PCPreferenceController, fix Debugger to
+	actually make setFont work thorugh the view-delegate chain.
+
+2020-03-24 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.m
+	Fix loading of font from preferences.
+
+2019-12-29  Fred Kiefer <FredKiefer@gmx.de>
+
+	* Framework/PCButton.m
+	* Framework/PCProjectBrowser.m
+	* Framework/PCProjectLauncherPanel.m
+	* Framework/PCProjectLoadedFilesPanel.m
+	* Framework/PCProjectManager.m
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	* Modules/Editors/ProjectCenter/SyntaxHighlighter.m
+	* Modules/Projects/Library/PCLibProject.h
+	* Modules/Projects/Library/PCLibProject.m
+	Remove compiler warnings.
+	* .gitignore: Add file
+
+2019-05-25 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/SyntaxDefinition.h
+	* Modules/Editors/ProjectCenter/SyntaxDefinition.m
+	Uniform context type to NSUInteger.
+
+2019-05-22 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCButton.m
+	* Headers/ProjectCenter/PCButton.h
+	Remove custom ToolTip implementation now present in GUI.
+
+2018-06-19 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Projects/Framework/PCFrameworkProject.h
+	* Modules/Projects/Framework/PCFrameworkProject.m
+	Add some GSDoc makefile aids
+
+2017-08-16 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Projects/Application/PCAppProject.m
+	Fix for nil bundle identifier.
+
+2017-01-17 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectManager.m
+	* Modules/Projects/Application/PCAppProject.h
+	Fix wrong declaration and missing subtype option.
+
+2017-01-13 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectManager.m
+	* Headers/Protocols/ProjectType.h
+	* Modules/Projects/Aggregate/PCAggregateProject.h
+	* Modules/Projects/Aggregate/PCAggregateProject.m
+	* Modules/Projects/Application/PCAppProject.h
+	* Modules/Projects/Application/PCAppProject.m
+	* Modules/Projects/Bundle/PCBundleProject.h
+	* Modules/Projects/Bundle/PCBundleProject.m
+	* Modules/Projects/Framework/PCFrameworkProject.h
+	* Modules/Projects/Framework/PCFrameworkProject.m
+	* Modules/Projects/ResourceSet/PCResourceSetProject.h
+	* Modules/Projects/ResourceSet/PCResourceSetProject.m
+	* Modules/Projects/Tool/PCToolProject.h
+	* Modules/Projects/Tool/PCToolProject.m
+	Pass options to createProjectAt and use those to create Gorm/Renaissance subtypes, enable the former by default.
+
+2016-12-16 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	Conditionally split on windows with CR-LF
+
+2016-11-28 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Parsers/ProjectCenter/PCParser.m
+	Fix off-by-one in length when checking the last character.
+
+2016-11-25 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	skip and report empty lines as PCDBEmptyRecord
+
+2016-11-19 11:22-EST Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PCDebuggerViewDelegateProtocol.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Added/implemented
+	debuggerSetup method.
+
+2016-11-18 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Projects/Application/PCAppProject+Inspector.h
+	* Modules/Projects/Application/PCAppProject+Inspector.m
+	* Modules/Projects/Application/Resources/Inspector.gorm
+	Connect add/remove buttons.
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	Commands need new-line.
+
+2016-11-17 09:20-EST Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Change flag to yes
+	in parseLine method to indicate debugger has started.
+
+2016-11-17 09:18-EST Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.h
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Added notification
+	to fix breakpoint loading.
+
+2016-09-29 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.h
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PCDebuggerViewDelegateProtocol.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	Add skeleton to handle breakpoints, add breakpoint types.
+
+2016-06-06 11:47-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PCDebuggerView.m: Add code to
+	make commands appear when the button is pressed.
+
+2016-05-22 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/PCEditorView.h
+	* Modules/Editors/ProjectCenter/PCEditorView.m
+	Comply to protocol.
+
+	* Modules/Editors/ProjectCenter/SyntaxHighlighter.h
+	* Modules/Editors/ProjectCenter/SyntaxHighlighter.m
+	Transition to NSInteger/NSUInteger
+
+2016-05-15 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	On windows kill with DebugBreakProcess() and not tskill. Available only on WinXP or higher.
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	For GDB < v. 7 (on win), attempt to grab process id from Windows thread information.
+
+2016-05-05 15:43-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Minor changes.
+
+2016-05-05 13:13-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Partial parsing
+	of result records to yield correct status in debuggerView.
+
+2016-05-05 11:23-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Handle more
+	escaped sequences to futher clean up output.
+
+2016-05-03 19:40-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Add parsers
+	to handle output from various types of MI data.  Code to handle
+	each individual case is being written.
+
+2016-05-03 18:00-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PCDebuggerView.m
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m: Changes
+	to allow pid to be passed back to PCDebugger by calling
+	setSubProcessId once the pid is parsed from the mi output.
+
+2016-05-03 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.h
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	Refactor path to executablePath.
+
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	Do not permit deletion beyond the new line or the gdb prompt.
+
+2016-03-23 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	* Modules/Debuggers/ProjectCenter/PCDebuggerView.h
+	* Modules/Debuggers/ProjectCenter/PCDebuggerView.m
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.h
+	* Modules/Debuggers/ProjectCenter/PipeDelegate.m
+	* Modules/Debuggers/ProjectCenter/PCDebuggerViewDelegateProtocol.h
+	Merge in from pipes branch: stdio/stdout over pipes handled in a separate delegate class.
+
+2016-03-23 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCBundleManager.m
+	* Framework/PCProjectLauncher.m
+	Merge from branch: check bundle loading and warn.
+
+2016-03-15 18:47-EDT Gregory John Casamento <greg.casamento@gmail.com>
+
+	* Modules/Debuggers/ProjectCenter/PTYView.h
+	* Modules/Debuggers/ProjectCenter/PTYView.m:
+	Undo previous change.  Move Riccardo's change to
+	branch ptyview_with_pipes.
+
+2016-03-14 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Debuggers/ProjectCenter/PTYView.h
+	* Modules/Debuggers/ProjectCenter/PTYView.m
+	Use stdio/stdout over pipes instead of a tty
+
+2016-03-08 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectLauncher.m
+	Update debug executable path search to run, make it work on windows.
+
+2015-11-09 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectInspector.m
+	Allocate a Mutable Array before assagning an Array to a MutableArray
+
+2015-11-05 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Projects/Application/PCAppProject+Inspector.h
+	* Modules/Projects/Application/PCAppProject+Inspector.m
+	* Headers/ProjectCenter/PCDefines.h
+	* Modules/Projects/Application/PCAppProject.h
+	* Modules/Projects/Application/PCAppProject.m
+	* Modules/Projects/Application/Resources/Inspector.gorm
+	CFBundleIdentifier support for Apps.
+
+2015-11-02 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/PCEditorView.m
+	Cleanups and NSInteger conversion.
+
+	* Modules/Editors/ProjectCenter/LineJumper.h
+	* Modules/Editors/ProjectCenter/LineJumper.m
+	declare missing method
+
+2015-06-16 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/GNUmakefile
+	* Framework/PCFileCreator.m
+	* Headers/ProjectCenter/PCFileCreator.h
+	* Framework/Resources/ocppclass.template
+	Enable project addition of obj-c++ classes.
+
+2015-06-13 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProjectEditor.m
+	Re-enable wrongly uncommented statement.
+
+	* Framework/PCEditorManager.m
+	If we have a directory, we check if it is a bundle that an app can open it and open it through NSWorkspace.
+
+2015-06-12 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/PCEditor.m
+	Enable parsing of obj-c++
+
+2015-06-12 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/Resources/Info.table
+	Enable Obj-C++ extension.
+
+	* Framework/PCEditorManager.m
+	Use the internal editor if it is available, even if no parser is available.
+
+	* Modules/Editors/ProjectCenter/PCEditor.m
+	Handle missing image better.
+
+2015-04-07 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/PCEditorView.m
+	Use constants and not strings as keys.
+
+	* Modules/Debuggers/ProjectCenter/PCDebugger.m
+	Use console font for the view.
+
+2015-03-22 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.m
+	Use Preferences color methods.
+
+2015-03-22 Riccardo Mottola <rm@gnu.org>
+
+	* Headers/Protocols/Preferences.h
+	* PCPrefController.m
+	Direct preferences method for setting and getting colors.
+
+2015-03-22 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.m
+	Convert CMYK to RGB before serializing.
+
+2015-03-22 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Editors/ProjectCenter/PCEditor.m
+	Actually use the background color preference.
+
+2015-03-22 Riccardo Mottola <rm@gnu.org>
+
+	* Headers/Protocols/Preferences.h
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.m
+	* PCPrefController.m
+	Move colorFromString from PCEditorFSCPrefs to PCPrefsController and make it thus generally available.
+
+2015-03-12 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Projects/Framework/PCFrameworkProject.m
+	Generate the PACKAGE_NAME for Frameworks.
+
+2015-03-11 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.m
+	Bug Fix: Set the font manager with the picked font, not always the same.
+
+2015-03-11 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.h
+	* Modules/Preferences/EditorFSC/PCEditorFSCPrefs.m
+	* Modules/Preferences/EditorFSC/Resources/EditorFSCPrefs.gorm
+	Provide Editor and Fixed font preferences, instead of plain and rich.
+
+	* Modules/Editors/ProjectCenter/PCEditorView.m
+	Use the preferences Editor font instead of the system one.
+
+2014-12-16 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProject.m
+	Initialize backup wrapper after wrapperPath since it depends on it!
+
+2014-12-16 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCMakefileFactory.m
+	Generate sections only if there are classes.
+
+2014-12-15 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCMakefileFactory.m
+	Create mm sections in makefiles for Objective-C++
+
+2014-12-08 Riccardo Mottola <rm@gnu.org>
+
+	* Framework/PCProject.m
+	Accept also Objective-C++ classes as Class files
+
+2014-11-20 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Parsers/ProjectCenter/PCParser.m
+	Force last action on parser if file lacks a new line at EOF.
+
+2014-11-20 Riccardo Mottola <rm@gnu.org>
+
+	* Modules/Parsers/ProjectCenter/ObjCCommentHandler.m
+	Fix parser to ignore comments inside strings.
+
 2014-10-07 Riccardo Mottola <rm@gnu.org>
 
 	* Framework/PCProjectManager.m

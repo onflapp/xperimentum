@@ -1,10 +1,11 @@
 /*
    GNUstep ProjectCenter - http://www.gnustep.org/experience/ProjectCenter.html
 
-   Copyright (C) 2001-2004 Free Software Foundation
+   Copyright (C) 2001-2017 Free Software Foundation
 
    Authors: Philippe C.D. Robert
             Serg Stoyan
+            Riccardo Mottola
 	    
    Description: This is the project type 'Application' for GNUstep. You never 
                 should create it yourself but use PCAppProj for doing this. 
@@ -54,6 +55,7 @@
   IBOutlet PCAppTextField *appImageField;
   IBOutlet PCAppTextField *helpFileField;
   IBOutlet PCAppTextField *mainNIBField;
+  IBOutlet NSTextField    *bundleIdentifierField;
 
   IBOutlet NSTextView     *helpText;
   IBOutlet PCFileNameIcon *iconView;
@@ -67,13 +69,13 @@
   IBOutlet NSButton       *docBasedAppButton;
   IBOutlet NSScrollView   *docTypesScroll;
 
-  NSTableView             *docTypesList;
-  NSTableColumn           *typeColumn;       // NSName
-  NSTableColumn           *nameColumn;       // NSHumanReadableName
-  NSTableColumn           *extensionsColumn; // NSUnixExtensions
-  NSTableColumn           *iconColumn;       // NSIcon
-  NSTableColumn           *roleColumn;       // NSRole
-  NSTableColumn           *classColumn;      // NSDocumentClass
+  IBOutlet NSTableView    *docTypesList;
+  IBOutlet NSTableColumn  *typeColumn;       // NSName
+  IBOutlet NSTableColumn  *nameColumn;       // NSHumanReadableName
+  IBOutlet NSTableColumn  *extensionsColumn; // NSUnixExtensions
+  IBOutlet NSTableColumn  *iconColumn;       // NSIcon
+  IBOutlet NSTableColumn  *roleColumn;       // NSRole
+  IBOutlet NSTableColumn  *classColumn;      // NSDocumentClass
   NSMutableArray          *docTypesItems;
 
   IBOutlet NSTextField    *docTypeLabel;
@@ -100,7 +102,7 @@
 - (void)loadInfoFile;
 - (void)dealloc;
 
-- (PCProject *)createProjectAt:(NSString *)path;
+- (PCProject *)createProjectAt:(NSString *)path withOption:(NSString *)projOption;
 
 @end
 
