@@ -203,8 +203,7 @@ NSString *PCEditorDidResignActiveNotification =
       app = [[NSWorkspace sharedWorkspace] getBestAppInRole:@"Editor" forExtension:[fileName pathExtension]];
       if (app)
         {
-          if ([[NSWorkspace sharedWorkspace] openFile: filePath])
-            return nil;
+          return nil;
         }
     }
 
