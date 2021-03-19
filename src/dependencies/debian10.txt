@@ -58,3 +58,6 @@ libxpm-dev
 libssl-dev
 libart-2.0-dev
 libwebkit2gtk-4.0-dev
+texi2html
+texinfo
+texlive
