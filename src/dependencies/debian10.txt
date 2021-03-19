@@ -14,9 +14,9 @@ flite1-dev
 libcups2-dev
 libgl1-mesa-dev
 util-linux-locales
-clang-9
-lldb-9
-lld-9
+clang-7
+lldb-7
+lld-7
 cmake
 autoconf
 libtool
@@ -27,7 +27,6 @@ libxml2-dev
 libxslt-dev
 libpth-dev
 openssl
-libglx-dev
 libtiff-dev
 libjpeg-dev
 libpng-dev
@@ -58,3 +57,4 @@ libxft-dev
 libxpm-dev
 libssl-dev
 libart-2.0-dev
+libwebkit2gtk-4.0-dev

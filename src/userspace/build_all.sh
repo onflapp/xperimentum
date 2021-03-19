@@ -18,10 +18,18 @@ cd $D/Applications/GNUMail
 make install
 ldconfig
 
+cd $D/Applications/ProjectCenter
+make install
+ldconfig
+
 cd $D/Applications/Gorm
 make install
 ldconfig
 
-cd $D/Applications/ProjectCenter
+cd $D/Frameworks/GTKWebKit
+make install
+ldconfig
+
+cd $D/Applications/WebBrowser
 make install
 ldconfig
