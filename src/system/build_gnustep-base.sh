@@ -7,4 +7,4 @@ cd ./gnustep-base || exit 1
 make clean
 ./configure || exit 1
 
-make install
+make -j2 install

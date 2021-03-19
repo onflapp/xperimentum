@@ -1,8 +1,8 @@
 #!/bin/bash
 
-cd ./gnustep-make
+. ./BUILD_CONFIG.sh
 
-export RUNTIME_VERSION="-fobjc-runtime=gnustep-1.8"
+cd ./gnustep-make
 
 make clean
 ./configure \
@@ -10,6 +10,7 @@ make clean
 	    --with-config-file=/Library/Preferences/GNUstep.conf \
 	    --with-layout=nextspace \
 	    --enable-native-objc-exceptions \
+	    --enable-objc-arc \
 	    --enable-debug-by-default \
 	    --with-library-combo=ng-gnu-gnu
 

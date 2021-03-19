@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+if [ -z "$CC" ];then
+  . ./BUILD_SETTINGS.sh
+fi
+
 cp ./nextspace/System/etc/ld.so.conf.d/nextspace.conf /etc/ld.so.conf.d
 
 ./build_libobjc2.sh

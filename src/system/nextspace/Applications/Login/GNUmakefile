@@ -7,8 +7,6 @@ include $(GNUSTEP_MAKEFILES)/common.make
 
 #GNUSTEP_BUILD_DIR = /Users/me/Projects/==BUILD==/Login.build
 
-CC=clang
-
 #
 # Application
 #

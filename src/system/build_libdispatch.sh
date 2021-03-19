@@ -5,8 +5,8 @@ rm -R _build 2>/dev/null
 mkdir -p _build
 cd _build
 cmake .. \
-	-DCMAKE_C_COMPILER=clang \
-	-DCMAKE_CXX_COMPILER=clang++ \
+	-DCMAKE_C_COMPILER=$CC \
+	-DCMAKE_CXX_COMPILER=$CXX \
 	-DCMAKE_SKIP_RPATH=ON \
 	-DCMAKE_BUILD_TYPE=Release \
 	-DCMAKE_INSTALL_PREFIX=/usr/NextSpace \
@@ -16,5 +16,5 @@ cmake .. \
 	-DUSE_GOLD_LINKER=YES
 
 make clean
-make install
+make -j2 install
 ldconfig
