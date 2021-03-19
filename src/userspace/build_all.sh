@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+. /Developer/Makefiles/GNUstep.sh
+export PATH=/usr/NextSpace/bin:$PATH
+
 D=$PWD
 
 cd $D/Frameworks/Pantomime
